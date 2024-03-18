@@ -1,19 +1,34 @@
 import 'package:uuid/uuid.dart';
 
 class Customer {
-  final String id;
+  String id;
   final String name;
   final String? contactNo;
-  final double totalPaymentPending;
 
   Customer({
+    required this.id,
     required this.name,
     this.contactNo,
-    required this.totalPaymentPending,
-  }) : id = const Uuid().v4();
+  });
+
+  factory Customer.fromJson(Map<String, dynamic> json) {
+    return Customer(
+      id: json['id'] ?? Uuid().v4(),
+      name: json['name'],
+      contactNo: json['contactNo'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'contactNo': contactNo,
+    };
+  }
 
   @override
   String toString() {
-    return 'Customer{id: $id, name: $name, contactNo: $contactNo, totalPaymentPending: $totalPaymentPending}';
+    return 'Customer{id: $id, name: $name, contactNo: $contactNo}';
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 import '../data.dart';
 import '../models/customer.dart';
@@ -20,12 +21,13 @@ class _CustomerScreenState extends State<CustomerScreen> {
         itemCount: Data.customers.length,
         itemBuilder: (context, index) {
           final customer = Data.customers[index];
+          final totalPaymentPending = _calculateTotalPaymentPending(customer);
           return Card(
             margin: EdgeInsets.all(8.0),
             child: ListTile(
               title: Text(customer.name),
               subtitle: Text(
-                  'Total Payment Pending: \$${customer.totalPaymentPending.toStringAsFixed(2)}'),
+                  'Total Payment Pending: \$${totalPaymentPending.toStringAsFixed(2)}'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -48,10 +50,19 @@ class _CustomerScreenState extends State<CustomerScreen> {
     );
   }
 
+  double _calculateTotalPaymentPending(Customer customer) {
+    double totalPaymentPending = 0.0;
+    for (var order in Data.orders) {
+      if (order.customerName == customer.name) {
+        totalPaymentPending += order.paymentDue;
+      }
+    }
+    return totalPaymentPending;
+  }
+
   void _addCustomerDialog(BuildContext context) {
     String name = '';
     String contactNo = '';
-    double totalPaymentPending = 0.0;
 
     final nameController = TextEditingController();
     final contactNoController = TextEditingController();
@@ -102,9 +113,9 @@ class _CustomerScreenState extends State<CustomerScreen> {
                 if (_formKey.currentState!.validate()) {
                   _formKey.currentState!.save();
                   final newCustomer = Customer(
+                    id: const Uuid().v4(),
                     name: name,
                     contactNo: contactNo.isEmpty ? null : contactNo,
-                    totalPaymentPending: totalPaymentPending,
                   );
                   setState(() {
                     Data.customers.add(newCustomer);

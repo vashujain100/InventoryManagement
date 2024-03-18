@@ -1,3 +1,5 @@
+import 'package:uuid/uuid.dart';
+
 import './models/customer.dart';
 import './models/order.dart';
 import './models/piece.dart';
@@ -5,19 +7,19 @@ import './models/piece.dart';
 class Data {
   static List<Customer> customers = [
     Customer(
+      id: Uuid().v4(),
       name: 'John Doe',
       contactNo: '1234567890',
-      totalPaymentPending: 100.0,
     ),
     Customer(
+      id: Uuid().v4(),
       contactNo: '1234567890',
       name: 'Jane Smith',
-      totalPaymentPending: 50.0,
     ),
     Customer(
+      id: Uuid().v4(),
       contactNo: '1234567890',
       name: 'Alice Johnson',
-      totalPaymentPending: 75.0,
     ),
   ];
 

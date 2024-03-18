@@ -28,9 +28,13 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double totalPaymentPending = customerOrders
+        .map((order) => order.paymentDue)
+        .fold(0, (prev, amount) => prev + amount);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Customer Details'),
+        title: const Text('Customer Details'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -39,19 +43,24 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
           children: <Widget>[
             Text(
               'Name: ${widget.customer.name}',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
-              'Total Payment Pending: \$${widget.customer.totalPaymentPending.toStringAsFixed(2)}',
-              style: TextStyle(fontSize: 16),
+              'Contact No: ${widget.customer.contactNo}',
+              style: const TextStyle(fontSize: 16),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 8),
             Text(
+              'Total Payment Pending: \$${totalPaymentPending.toStringAsFixed(2)}',
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 16),
+            const Text(
               'Orders:',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
@@ -62,42 +71,45 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                 scrollDirection: Axis.horizontal,
                 child: DataTable(
                   columnSpacing: 16.0,
-                  columns: [
+                  columns: const [
                     DataColumn(label: Text('Piece')),
-                    DataColumn(label: Text('Sizes')),
                     DataColumn(label: Text('Date')),
                     DataColumn(label: Text('Total Payment')),
                     DataColumn(label: Text('Payment Done')),
                     DataColumn(label: Text('Payment Due')),
+                    DataColumn(label: Text('Sizes and Quantities')),
                   ],
                   rows: customerOrders
                       .map((order) => DataRow(cells: [
                             DataCell(Text(order.piece)),
-                            DataCell(
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: order.sizesQuantityMap.entries
-                                    .map((entry) => Text(
-                                        'Size: ${entry.key}, Quantity: ${entry.value}'))
-                                    .toList(),
-                              ),
-                            ),
                             DataCell(Text(
                                 order.date.toIso8601String().split('T')[0])),
                             DataCell(Text(order.totalPayment.toString())),
                             DataCell(Text(order.paymentDone.toString())),
                             DataCell(Text(order.paymentDue.toString())),
+                            DataCell(
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: order.sizesQuantityMap.entries
+                                      .map((entry) =>
+                                          Text('${entry.key}: ${entry.value}'))
+                                      .toList(),
+                                ),
+                              ),
+                            ),
                           ]))
                       .toList(),
                 ),
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
                 _showAddOrderDialog(context);
               },
-              child: Text('Add New Order'),
+              child: const Text('Add New Order'),
             ),
           ],
         ),

@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../data.dart';
 import '../models/piece.dart';
+import '../utility/piece_search_delegate.dart';
+import '../widgets/add_piece_dialog.dart';
+import '../widgets/edit_quantity_dialog.dart';
 
 class StockScreen extends StatefulWidget {
+  const StockScreen({super.key});
+
   @override
   _StockScreenState createState() => _StockScreenState();
 }
@@ -11,13 +16,36 @@ class StockScreen extends StatefulWidget {
 class _StockScreenState extends State<StockScreen> {
   @override
   Widget build(BuildContext context) {
-    // Sort the pieces by name
     List<Piece> sortedPieces = List.from(Data.pieces);
     sortedPieces.sort((a, b) => a.pieceNumber.compareTo(b.pieceNumber));
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Stock'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              showSearch(
+                context: context,
+                delegate: PieceSearchDelegate(),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AddPieceDialog();
+                },
+              ).then((_) {
+                setState(() {});
+              });
+            },
+          ),
+        ],
       ),
       body: ListView.builder(
         itemCount: sortedPieces.length,
@@ -31,12 +59,30 @@ class _StockScreenState extends State<StockScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(
-                    'Piece Number: ${piece.pieceNumber}',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Piece Number: ${piece.pieceNumber}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return EditQuantityDialog(piece);
+                            },
+                          ).then((_) {
+                            setState(() {});
+                          });
+                        },
+                      ),
+                    ],
                   ),
                   SizedBox(height: 8),
                   Divider(),
@@ -68,116 +114,6 @@ class _StockScreenState extends State<StockScreen> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _showAddItemDialog(context);
-        },
-        child: Icon(Icons.add),
-      ),
-    );
-  }
-
-  void _showAddItemDialog(BuildContext context) {
-    String pieceNumber = '';
-    Map<String, int> sizesQuantityMap = {};
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Add Item to Stock'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              TextField(
-                decoration: InputDecoration(labelText: 'Piece Number'),
-                onChanged: (value) {
-                  pieceNumber = value;
-                },
-              ),
-              SizedBox(height: 16),
-              StatefulBuilder(
-                builder: (BuildContext context, StateSetter setState) {
-                  return Column(
-                    children: sizesQuantityMap.entries.map((entry) {
-                      return Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              decoration: InputDecoration(labelText: 'Size'),
-                              // initialValue: entry.key,
-                              onChanged: (value) {
-                                setState(() {
-                                  sizesQuantityMap[value] = entry.value;
-                                  sizesQuantityMap.remove(entry.key);
-                                });
-                              },
-                            ),
-                          ),
-                          SizedBox(width: 16),
-                          Expanded(
-                            child: TextField(
-                              decoration:
-                                  InputDecoration(labelText: 'Quantity'),
-                              keyboardType: TextInputType.number,
-                              // initialValue: entry.value.toString(),
-                              onChanged: (value) {
-                                setState(() {
-                                  sizesQuantityMap[entry.key] =
-                                      int.tryParse(value) ?? 0;
-                                });
-                              },
-                            ),
-                          ),
-                        ],
-                      );
-                    }).toList(),
-                  );
-                },
-              ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    sizesQuantityMap.addAll({
-                      '': 0,
-                    });
-                  });
-                },
-                child: Text('Add Size'),
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  Piece existingPiece = Data.pieces.firstWhere(
-                    (piece) => piece.pieceNumber == pieceNumber,
-                    orElse: () => Piece(
-                      pieceNumber: pieceNumber,
-                      sizesQuantityMap: {},
-                    ),
-                  );
-                  existingPiece.sizesQuantityMap.addAll(sizesQuantityMap);
-
-                  if (!Data.pieces.contains(existingPiece)) {
-                    Data.pieces.add(existingPiece);
-                  }
-                });
-                Navigator.of(context).pop();
-              },
-              child: Text('Add'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-          ],
-        );
-      },
     );
   }
 }

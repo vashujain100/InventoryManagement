@@ -2,11 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:twetter/screens/order_screen.dart';
 import 'package:twetter/screens/stock_screen.dart';
 
+import '../data.dart';
 import 'customer_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    String topSellingProduct = _calculateTopSellingProduct();
+    int totalOrders = _calculateTotalOrders();
+
+    int pendingOrders = _calculatePendingOrders(context);
+    int lowStockItems = _calculateLowStockItems();
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
@@ -65,34 +72,34 @@ class DashboardScreen extends StatelessWidget {
                         );
                       },
                     ),
-                    _buildMetricCard(
-                      context: context,
-                      icon: Icons.shopping_cart,
-                      label: 'Total Orders',
-                      value: '1,245',
-                      iconColor: Theme.of(context).primaryColor,
-                    ),
-                    _buildMetricCard(
-                      context: context,
-                      icon: Icons.pending,
-                      label: 'Pending Orders',
-                      value: '32',
-                      iconColor: Theme.of(context).splashColor,
-                    ),
-                    _buildMetricCard(
-                      context: context,
-                      icon: Icons.warning,
-                      label: 'Low Stock Items',
-                      value: '8',
-                      iconColor: Colors.orange,
-                    ),
-                    _buildMetricCard(
-                      context: context,
-                      icon: Icons.star,
-                      label: 'Top Selling Product',
-                      value: 'Product XYZ',
-                      iconColor: Colors.green,
-                    ),
+                    // _buildMetricCard(
+                    //   context: context,
+                    //   icon: Icons.shopping_cart,
+                    //   label: 'Total Orders',
+                    //   value: totalOrders.toString(),
+                    //   iconColor: Theme.of(context).primaryColor,
+                    // ),
+                    // _buildMetricCard(
+                    //   context: context,
+                    //   icon: Icons.pending,
+                    //   label: 'Pending Orders',
+                    //   value: pendingOrders.toString(),
+                    //   iconColor: Theme.of(context).splashColor,
+                    // ),
+                    // _buildMetricCard(
+                    //   context: context,
+                    //   icon: Icons.warning,
+                    //   label: 'Low Stock Items',
+                    //   value: lowStockItems.toString(),
+                    //   iconColor: Colors.orange,
+                    // ),
+                    // _buildMetricCard(
+                    //   context: context,
+                    //   icon: Icons.star,
+                    //   label: 'Top Selling Product',
+                    //   value: topSellingProduct,
+                    //   iconColor: Colors.green,
+                    // ),
                   ],
                 ),
               ),
@@ -182,5 +189,45 @@ class DashboardScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _calculateTopSellingProduct() {
+    // Map<String, int> productCountMap = {};
+    // Data.orders.forEach((order) {
+    //   if (productCountMap.containsKey(order.product)) {
+    //     productCountMap[order.product] += 1;
+    //   } else {
+    //     productCountMap[order.product] = 1;
+    //   }
+    // });
+    //
+    // // Find the product with the maximum count
+    String topProduct = '';
+    // int maxCount = 0;
+    // productCountMap.forEach((product, count) {
+    //   if (count > maxCount) {
+    //     topProduct = product;
+    //     maxCount = count;
+    //   }
+    // });
+    return topProduct;
+  }
+
+  int _calculateTotalOrders() {
+    return 0;
+    // return Data.orders.length;
+  }
+
+  int _calculatePendingOrders(BuildContext context) {
+    // int pendingCount = Data.orders.where((order) => order.status == 'Pending').length;
+    int pendingOrders =
+        Data.orders.where((order) => order.paymentDue > 0).length;
+    return pendingOrders;
+  }
+
+  int _calculateLowStockItems() {
+    // int lowStockCount = Data.stockItems.where((item) => item.quantity < 10).length;
+    int lowStockCount = 0;
+    return lowStockCount;
   }
 }

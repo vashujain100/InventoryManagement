@@ -3,18 +3,17 @@ import 'package:flutter/material.dart';
 import './theme.dart';
 import 'screens/dashboard.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp();
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Twetter App',
       theme: lightTheme,
       home: DashboardScreen(),
     );

@@ -18,4 +18,17 @@ class Order {
     required this.paymentDone,
     required this.paymentDue,
   });
+
+  factory Order.fromJson(Map<String, dynamic> json) {
+    return Order(
+      piece: json['piece'],
+      sizesQuantityMap: Map<String, int>.from(json['sizesQuantityMap']),
+      date: DateTime.parse(json['date']),
+      customerName: json['customerName'],
+      customerId: json['customerId'],
+      totalPayment: json['totalPayment'].toDouble(),
+      paymentDone: json['paymentDone'].toDouble(),
+      paymentDue: json['paymentDue'].toDouble(),
+    );
+  }
 }

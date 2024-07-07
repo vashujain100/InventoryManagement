@@ -5,9 +5,9 @@ import '../services/pieces_services.dart';
 
 class EditQuantityDialog extends StatefulWidget {
   final Piece piece;
-  final Function() onPieceUpataed;
+  final Function() onPieceUpdated;
 
-  EditQuantityDialog(this.piece, {required this.onPieceUpataed});
+  EditQuantityDialog(this.piece, {required this.onPieceUpdated});
 
   @override
   _EditQuantityDialogState createState() => _EditQuantityDialogState();
@@ -27,111 +27,145 @@ class _EditQuantityDialogState extends State<EditQuantityDialog> {
 
   @override
   void dispose() {
-    super.dispose();
     newSizeController.dispose();
     newQuantityController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Edit Piece : ${widget.piece.pieceNumber}'),
-      content: SingleChildScrollView(
-        child: StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                for (var entry in newSizesQuantityMap.entries)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Size ${entry.key}:',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                      SizedBox(width: 16),
-                      Expanded(
-                        child: Focus(
-                          onFocusChange: (hasFocus) {
-                            if (!hasFocus) {
-                              // Save the new quantity when focus is lost
-                              _updatePiece();
-                            }
-                          },
-                          child: TextFormField(
-                            initialValue:
-                                newSizesQuantityMap[entry.key].toString(),
-                            keyboardType: TextInputType.number,
-                            onChanged: (value) {
-                              // Update the quantity in the map when the value changes
-                              newSizesQuantityMap[entry.key] =
-                                  int.tryParse(value) ?? 0;
-                            },
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () {
-                          _showConfirmationDialog(context, entry.key);
-                        },
-                      ),
-                    ],
-                  ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: newSizeController,
-                        decoration: InputDecoration(labelText: 'Add Size'),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextField(
-                        controller: newQuantityController,
-                        decoration: InputDecoration(labelText: 'Quantity'),
-                        keyboardType: TextInputType.number,
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.add),
-                      onPressed: () {
-                        setState(() {
-                          _addNewSize(false);
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
+    return Dialog(
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.9,
+        padding: EdgeInsets.all(16),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text('Edit Piece: ${widget.piece.pieceNumber}',
+                  style: Theme.of(context).textTheme.headline6),
+              SizedBox(height: 24),
+              Text('Sizes and Quantities',
+                  style: Theme.of(context).textTheme.subtitle1),
+              SizedBox(height: 8),
+              _buildSizeQuantityList(),
+              SizedBox(height: 16),
+              _buildAddSizeQuantitySection(),
+              SizedBox(height: 24),
+              _buildActionButtons(),
+            ],
+          ),
         ),
       ),
-      actions: <Widget>[
+    );
+  }
+
+  Widget _buildSizeQuantityList() {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: newSizesQuantityMap.entries.map((entry) {
+          return ListTile(
+            title: Text('Size ${entry.key}'),
+            subtitle: TextFormField(
+              initialValue: entry.value.toString(),
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Quantity',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                newSizesQuantityMap[entry.key] = int.tryParse(value) ?? 0;
+              },
+            ),
+            trailing: IconButton(
+              icon: Icon(Icons.delete, color: Theme.of(context).errorColor),
+              onPressed: () => _showConfirmationDialog(context, entry.key),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildAddSizeQuantitySection() {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Add New Size', style: Theme.of(context).textTheme.subtitle2),
+            SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: newSizeController,
+                    decoration: InputDecoration(
+                      labelText: 'Size',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                Expanded(
+                  child: TextFormField(
+                    controller: newQuantityController,
+                    decoration: InputDecoration(
+                      labelText: 'Quantity',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8),
+            ElevatedButton.icon(
+              onPressed: () => _addNewSize(false),
+              icon: Icon(Icons.add),
+              label: Text('Add Size'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
         TextButton(
-          onPressed: () {
-            _showDeleteConfirmationDialog(context);
-          },
+          onPressed: () => _showDeleteConfirmationDialog(context),
           child: Text('Delete Piece'),
+          style: TextButton.styleFrom(primary: Theme.of(context).errorColor),
         ),
-        TextButton(
-          onPressed: () {
-            _updatePiece();
-            widget.onPieceUpataed();
-            _addNewSize(true);
-          },
-          child: Text('Save'),
-        ),
-        TextButton(
-          onPressed: () {
-            widget.onPieceUpataed();
-            Navigator.of(context).pop();
-          },
-          child: Text('Cancel'),
+        Row(
+          children: [
+            TextButton(
+              onPressed: () {
+                widget.onPieceUpdated();
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            SizedBox(width: 8),
+            ElevatedButton(
+              onPressed: () {
+                _updatePiece();
+                widget.onPieceUpdated();
+                Navigator.of(context).pop();
+              },
+              child: Text('Save'),
+            ),
+          ],
         ),
       ],
     );
@@ -152,20 +186,19 @@ class _EditQuantityDialogState extends State<EditQuantityDialog> {
           content: Text('Are you sure you want to delete size $size?'),
           actions: <Widget>[
             TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('No'),
+            ),
+            ElevatedButton(
               onPressed: () {
                 setState(() {
                   newSizesQuantityMap.remove(size);
-                  _updatePiece();
                 });
                 Navigator.of(context).pop();
               },
               child: Text('Yes'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('No'),
+              style: ElevatedButton.styleFrom(
+                  primary: Theme.of(context).errorColor),
             ),
           ],
         );
@@ -182,19 +215,19 @@ class _EditQuantityDialogState extends State<EditQuantityDialog> {
           content: Text('Are you sure you want to delete this piece?'),
           actions: <Widget>[
             TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('No'),
+            ),
+            ElevatedButton(
               onPressed: () {
                 _pieceService.deletePieceById(widget.piece.id);
-                widget.onPieceUpataed();
+                widget.onPieceUpdated();
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
               },
               child: Text('Yes'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('No'),
+              style: ElevatedButton.styleFrom(
+                  primary: Theme.of(context).errorColor),
             ),
           ],
         );
@@ -209,9 +242,7 @@ class _EditQuantityDialogState extends State<EditQuantityDialog> {
 
     if (newSize.isNotEmpty && newQuantity > 0) {
       if (newSizesQuantityMap.containsKey(newSize)) {
-        setState(() {
-          _showReplaceDialog(newSize, newQuantity);
-        });
+        _showReplaceDialog(newSize, newQuantity);
       } else {
         setState(() {
           newSizesQuantityMap[newSize] = newQuantity;
@@ -219,15 +250,10 @@ class _EditQuantityDialogState extends State<EditQuantityDialog> {
           newQuantityController.clear();
         });
       }
-    } else if (!isSaveButton) {
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invalid size or quantity'),
-        ),
+        SnackBar(content: Text('Invalid size or quantity')),
       );
-    }
-    if (isSaveButton) {
-      Navigator.of(context).pop();
     }
   }
 
@@ -241,21 +267,19 @@ class _EditQuantityDialogState extends State<EditQuantityDialog> {
               Text('Size $newSize already exists. Do you want to replace it?'),
           actions: <Widget>[
             TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
               onPressed: () {
                 setState(() {
+                  newSizesQuantityMap[newSize] = newQuantity;
                   newSizeController.clear();
                   newQuantityController.clear();
-                  newSizesQuantityMap[newSize] = newQuantity;
                 });
                 Navigator.of(context).pop();
               },
               child: Text('Replace'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
             ),
           ],
         );

@@ -162,7 +162,7 @@ class _StockScreenState extends State<StockScreen> {
                   builder: (BuildContext context) {
                     return EditQuantityDialog(
                       piece,
-                      onPieceUpataed: () {
+                      onPieceUpdated: () {
                         setState(() {
                           _loadPieces();
                         });

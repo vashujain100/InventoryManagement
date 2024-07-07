@@ -212,6 +212,7 @@ class _OrderDialogState extends State<OrderDialog> {
                 .textTheme
                 .subtitle1
                 ?.copyWith(fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
           )
         : Autocomplete<String>(
             optionsBuilder: (TextEditingValue textEditingValue) {
@@ -233,9 +234,11 @@ class _OrderDialogState extends State<OrderDialog> {
               return TextFormField(
                 controller: textEditingController,
                 focusNode: focusNode,
+                textAlign: TextAlign.center,
                 decoration: InputDecoration(
                   labelText: 'Customer Name',
                   border: OutlineInputBorder(),
+                  alignLabelWithHint: true,
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -259,13 +262,14 @@ class _OrderDialogState extends State<OrderDialog> {
       items: _pieces
           .map((piece) => DropdownMenuItem<String>(
                 value: piece.id,
-                child: Text(piece.pieceNumber),
+                child: Text(piece.pieceNumber, textAlign: TextAlign.center),
               ))
           .toList(),
       onChanged: _updateSelectedPiece,
       decoration: InputDecoration(
         labelText: 'Select Piece',
         border: OutlineInputBorder(),
+        alignLabelWithHint: true,
       ),
       validator: (value) => value == null ? 'Please select a piece' : null,
     );
@@ -297,10 +301,12 @@ class _OrderDialogState extends State<OrderDialog> {
     return Column(
       children: [
         TextFormField(
+          textAlign: TextAlign.center,
           decoration: InputDecoration(
             labelText: 'Total Payment',
             border: OutlineInputBorder(),
             prefixIcon: Icon(Icons.currency_rupee_outlined),
+            alignLabelWithHint: true,
           ),
           keyboardType: TextInputType.numberWithOptions(decimal: true),
           validator: (value) => value == null ||
@@ -312,10 +318,12 @@ class _OrderDialogState extends State<OrderDialog> {
         ),
         SizedBox(height: 16),
         TextFormField(
+          textAlign: TextAlign.center,
           decoration: InputDecoration(
             labelText: 'Payment Done',
             border: OutlineInputBorder(),
             prefixIcon: Icon(Icons.payment),
+            alignLabelWithHint: true,
           ),
           keyboardType: TextInputType.numberWithOptions(decimal: true),
           validator: (value) => value == null ||

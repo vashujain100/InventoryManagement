@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:twetter/services/customers_service.dart';
+import 'package:twetter/services/orders_services.dart';
 import 'package:uuid/uuid.dart';
 
-import '../data.dart';
 import '../models/customer.dart';
+import '../models/order.dart';
 import 'customer_details_screen.dart';
 
 class CustomerScreen extends StatefulWidget {
@@ -11,6 +13,32 @@ class CustomerScreen extends StatefulWidget {
 }
 
 class _CustomerScreenState extends State<CustomerScreen> {
+  final _customerService = CustomerService();
+  List<Customer> _customers = [];
+  final _orderService = OrdersService();
+  List<Order> _customerOrders = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOrders();
+    _loadCustomers();
+  }
+
+  Future<void> _loadCustomers() async {
+    final customers = await _customerService.getAllCustomers();
+    setState(() {
+      _customers = customers;
+    });
+  }
+
+  Future<void> _loadOrders() async {
+    final orders = await _orderService.getAllOrders();
+    setState(() {
+      _customerOrders = orders;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,9 +46,9 @@ class _CustomerScreenState extends State<CustomerScreen> {
         title: Text('Customers'),
       ),
       body: ListView.builder(
-        itemCount: Data.customers.length,
+        itemCount: _customers.length,
         itemBuilder: (context, index) {
-          final customer = Data.customers[index];
+          final customer = _customers[index];
           final totalPaymentPending = _calculateTotalPaymentPending(customer);
           return Card(
             margin: EdgeInsets.all(8.0),
@@ -52,7 +80,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
 
   double _calculateTotalPaymentPending(Customer customer) {
     double totalPaymentPending = 0.0;
-    for (var order in Data.orders) {
+    for (var order in _customerOrders) {
       if (order.customerName == customer.name) {
         totalPaymentPending += order.paymentDue;
       }
@@ -117,9 +145,8 @@ class _CustomerScreenState extends State<CustomerScreen> {
                     name: name,
                     contactNo: contactNo.isEmpty ? null : contactNo,
                   );
-                  setState(() {
-                    Data.customers.add(newCustomer);
-                  });
+                  _customerService.addCustomer(newCustomer);
+                  _loadCustomers();
                   Navigator.of(context).pop();
                 }
               },

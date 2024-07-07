@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../data.dart';
 import '../models/piece.dart';
+import '../services/pieces_services.dart';
 
 class AddPieceDialog extends StatefulWidget {
+  final Function() onPieceAdded;
+
+  AddPieceDialog({required this.onPieceAdded});
+
   @override
   _AddPieceDialogState createState() => _AddPieceDialogState();
 }
@@ -13,11 +17,21 @@ class _AddPieceDialogState extends State<AddPieceDialog> {
   final TextEditingController pieceNameController = TextEditingController();
   final TextEditingController newSizeController = TextEditingController();
   final TextEditingController newQuantityController = TextEditingController();
+  final _pieceService = PiecesService();
+  List<Piece> _pieces = [];
 
   @override
   void initState() {
+    _loadPieces();
     super.initState();
     newSizesQuantityMap = {};
+  }
+
+  Future<void> _loadPieces() async {
+    final pieces = await _pieceService.getAllPieces();
+    setState(() {
+      _pieces = pieces;
+    });
   }
 
   @override
@@ -43,8 +57,7 @@ class _AddPieceDialogState extends State<AddPieceDialog> {
                   decoration: InputDecoration(labelText: 'Piece Name'),
                   onChanged: (value) {
                     // Check if a piece with the same name already exists
-                    if (Data.pieces
-                        .any((piece) => piece.pieceNumber == value)) {
+                    if (_pieces.any((piece) => piece.pieceNumber == value)) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content:
@@ -125,7 +138,6 @@ class _AddPieceDialogState extends State<AddPieceDialog> {
         TextButton(
           onPressed: () {
             setState(() {
-              // _updatePiece();
               _addNewSize(true);
               _savePiece();
             });
@@ -147,7 +159,8 @@ class _AddPieceDialogState extends State<AddPieceDialog> {
     if (pieceName.isNotEmpty && newSizesQuantityMap.isNotEmpty) {
       Piece newPiece =
           Piece(pieceNumber: pieceName, sizesQuantityMap: newSizesQuantityMap);
-      Data.pieces.add(newPiece);
+      _pieceService.addPiece(newPiece);
+      widget.onPieceAdded();
       Navigator.of(context).pop();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../data.dart';
 import '../models/piece.dart';
+import '../services/pieces_services.dart';
 
 class EditQuantityDialog extends StatefulWidget {
   final Piece piece;
+  final Function() onPieceUpataed;
 
-  EditQuantityDialog(this.piece);
+  EditQuantityDialog(this.piece, {required this.onPieceUpataed});
 
   @override
   _EditQuantityDialogState createState() => _EditQuantityDialogState();
@@ -16,6 +17,7 @@ class _EditQuantityDialogState extends State<EditQuantityDialog> {
   late Map<String, int> newSizesQuantityMap;
   final TextEditingController newSizeController = TextEditingController();
   final TextEditingController newQuantityController = TextEditingController();
+  final _pieceService = PiecesService();
 
   @override
   void initState() {
@@ -33,7 +35,7 @@ class _EditQuantityDialogState extends State<EditQuantityDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Edit Piece'),
+      title: Text('Edit Piece : ${widget.piece.pieceNumber}'),
       content: SingleChildScrollView(
         child: StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
@@ -119,12 +121,14 @@ class _EditQuantityDialogState extends State<EditQuantityDialog> {
         TextButton(
           onPressed: () {
             _updatePiece();
+            widget.onPieceUpataed();
             _addNewSize(true);
           },
           child: Text('Save'),
         ),
         TextButton(
           onPressed: () {
+            widget.onPieceUpataed();
             Navigator.of(context).pop();
           },
           child: Text('Cancel'),
@@ -136,11 +140,7 @@ class _EditQuantityDialogState extends State<EditQuantityDialog> {
   void _updatePiece() {
     Piece updatedPiece =
         widget.piece.copyWithSizesQuantityMap(newSizesQuantityMap);
-    int index = Data.pieces.indexWhere(
-        (element) => element.pieceNumber == widget.piece.pieceNumber);
-    if (index != -1) {
-      Data.pieces[index] = updatedPiece;
-    }
+    _pieceService.updatePiece(updatedPiece);
   }
 
   void _showConfirmationDialog(BuildContext context, String size) {
@@ -183,9 +183,8 @@ class _EditQuantityDialogState extends State<EditQuantityDialog> {
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                setState(() {
-                  Data.pieces.remove(widget.piece);
-                });
+                _pieceService.deletePieceById(widget.piece.id);
+                widget.onPieceUpataed();
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
               },

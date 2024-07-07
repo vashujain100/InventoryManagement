@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:twetter/services/pieces_services.dart';
 
-import '../data.dart';
 import '../models/piece.dart';
 import '../utility/piece_search_delegate.dart';
 import '../widgets/add_piece_dialog.dart';
@@ -14,9 +14,33 @@ class StockScreen extends StatefulWidget {
 }
 
 class _StockScreenState extends State<StockScreen> {
+  final _pieceService = PiecesService();
+  List<Piece> _pieces = [];
+  final TextEditingController _deleteConfirmController =
+      TextEditingController();
+
+  @override
+  void initState() {
+    _loadPieces();
+    super.initState();
+  }
+
+  Future<void> _loadPieces() async {
+    final pieces = await _pieceService.getAllPieces();
+    setState(() {
+      _pieces = pieces;
+    });
+  }
+
+  @override
+  void dispose() {
+    _deleteConfirmController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    List<Piece> sortedPieces = List.from(Data.pieces);
+    List<Piece> sortedPieces = List.from(_pieces);
     sortedPieces.sort((a, b) => a.pieceNumber.compareTo(b.pieceNumber));
 
     return Scaffold(
@@ -33,12 +57,24 @@ class _StockScreenState extends State<StockScreen> {
             },
           ),
           IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () {
+              _showDeleteAllConfirmationDialog(context);
+            },
+          ),
+          IconButton(
             icon: Icon(Icons.add),
             onPressed: () {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
-                  return AddPieceDialog();
+                  return AddPieceDialog(
+                    onPieceAdded: () {
+                      setState(() {
+                        _loadPieces(); // Assuming you have a method to load pieces in the parent widget
+                      });
+                    },
+                  );
                 },
               ).then((_) {
                 setState(() {});
@@ -75,7 +111,14 @@ class _StockScreenState extends State<StockScreen> {
                           showDialog(
                             context: context,
                             builder: (BuildContext context) {
-                              return EditQuantityDialog(piece);
+                              return EditQuantityDialog(
+                                piece,
+                                onPieceUpataed: () {
+                                  setState(() {
+                                    _loadPieces();
+                                  });
+                                },
+                              );
                             },
                           ).then((_) {
                             setState(() {});
@@ -114,6 +157,55 @@ class _StockScreenState extends State<StockScreen> {
           );
         },
       ),
+    );
+  }
+
+  void _showDeleteAllConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete All Pieces?'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                  'Are you sure you want to delete all pieces? This action cannot be undone.'),
+              SizedBox(height: 20),
+              Text('Type "Delete" to confirm:'),
+              TextField(
+                controller: _deleteConfirmController,
+                decoration: InputDecoration(
+                  hintText: 'Type "Delete" here',
+                ),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (_deleteConfirmController.text.trim() == 'Delete') {
+                  await _pieceService.deleteAllPieces();
+                  _deleteConfirmController.clear();
+                  Navigator.of(context).pop();
+                  _loadPieces();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Please type "Delete" to confirm')),
+                  );
+                }
+              },
+              child: Text('Delete All'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

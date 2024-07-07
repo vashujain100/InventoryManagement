@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:twetter/screens/order_screen.dart';
 import 'package:twetter/screens/stock_screen.dart';
 
-import '../data.dart';
 import 'customer_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -11,7 +10,7 @@ class DashboardScreen extends StatelessWidget {
     String topSellingProduct = _calculateTopSellingProduct();
     int totalOrders = _calculateTotalOrders();
 
-    int pendingOrders = _calculatePendingOrders(context);
+    // int pendingOrders = _calculatePendingOrders(context);
     int lowStockItems = _calculateLowStockItems();
 
     return Scaffold(
@@ -218,12 +217,12 @@ class DashboardScreen extends StatelessWidget {
     // return Data.orders.length;
   }
 
-  int _calculatePendingOrders(BuildContext context) {
-    // int pendingCount = Data.orders.where((order) => order.status == 'Pending').length;
-    int pendingOrders =
-        Data.orders.where((order) => order.paymentDue > 0).length;
-    return pendingOrders;
-  }
+  // int _calculatePendingOrders(BuildContext context) {
+  //   // int pendingCount = Data.orders.where((order) => order.status == 'Pending').length;
+  //   int pendingOrders =
+  //       Data.orders.where((order) => order.paymentDue > 0).length;
+  //   return pendingOrders;
+  // }
 
   int _calculateLowStockItems() {
     // int lowStockCount = Data.stockItems.where((item) => item.quantity < 10).length;

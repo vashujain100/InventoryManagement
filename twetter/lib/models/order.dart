@@ -1,11 +1,31 @@
-class Order {
+import 'package:hive/hive.dart';
+
+part 'order.g.dart';
+
+@HiveType(typeId: 1)
+class Order extends HiveObject {
+  @HiveField(0)
   final String piece;
+
+  @HiveField(1)
   final Map<String, int> sizesQuantityMap;
+
+  @HiveField(2)
   final DateTime date;
+
+  @HiveField(3)
   final String customerName;
-  final String? customerId; // Optional customer ID
+
+  @HiveField(4)
+  final String? customerId;
+
+  @HiveField(5)
   final double totalPayment;
+
+  @HiveField(6)
   final double paymentDone;
+
+  @HiveField(7)
   final double paymentDue;
 
   Order({

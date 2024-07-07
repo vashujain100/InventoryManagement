@@ -1,11 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:twetter/services/orders_services.dart';
 
-import '../data.dart';
 import '../models/order.dart';
 import '../widgets/order_details_dialog.dart';
 import '../widgets/order_dialog.dart';
 
-class OrderScreen extends StatelessWidget {
+class OrderScreen extends StatefulWidget {
+  const OrderScreen({super.key});
+
+  @override
+  State<OrderScreen> createState() => _OrderScreenState();
+}
+
+class _OrderScreenState extends State<OrderScreen> {
+  final _orderService = OrdersService();
+  List<Order> _orders = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOrders();
+  }
+
+  Future<void> _loadOrders() async {
+    final orders = await _orderService.getAllOrders();
+    setState(() {
+      _orders = orders;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,7 +51,7 @@ class OrderScreen extends StatelessWidget {
             DataColumn(label: Text('Payment Done')),
             DataColumn(label: Text('Payment Due')),
           ],
-          rows: Data.orders.map((order) {
+          rows: _orders.map((order) {
             return DataRow(
               cells: [
                 DataCell(Text(order.customerName)),
@@ -83,12 +106,15 @@ class OrderScreen extends StatelessWidget {
     );
   }
 
+  void _onOrderPlaced(Order newOrder) {}
+
   void _showAddOrderDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return OrderDialog(
           customer: null,
+          onOrderPlaced: _onOrderPlaced,
         );
       },
     );

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:twetter/services/orders_services.dart';
 
-import '../data.dart';
 import '../models/customer.dart';
 import '../models/order.dart';
 import '../widgets/order_dialog.dart';
@@ -16,19 +16,33 @@ class CustomerDetailsScreen extends StatefulWidget {
 }
 
 class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
-  List<Order> customerOrders = [];
+  final _orderService = OrdersService();
+  List<Order> _customerOrders = [];
 
   @override
   void initState() {
-    customerOrders = Data.orders
-        .where((order) => order.customerName == widget.customer.name)
-        .toList();
     super.initState();
+    _loadOrders();
+  }
+
+  Future<void> _loadOrders() async {
+    final orders =
+        await _orderService.getOrdersByCustomerName(widget.customer.name);
+    setState(() {
+      _customerOrders = orders;
+    });
+  }
+
+  void _onOrderPlaced(Order newOrder) {
+    setState(() {
+      _customerOrders.add(newOrder);
+      _loadOrders();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    double totalPaymentPending = customerOrders
+    double totalPaymentPending = _customerOrders
         .map((order) => order.paymentDue)
         .fold(0, (prev, amount) => prev + amount);
 
@@ -61,68 +75,55 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(8.0),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _customerOrders.length,
+                itemBuilder: (context, index) {
+                  final order = _customerOrders[index];
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Piece: ${order.piece}'),
+                          Text(
+                              'Date: ${order.date.toIso8601String().split('T')[0]}'),
+                          Text('Total Payment: ${order.totalPayment}'),
+                          Text('Payment Done: ${order.paymentDone}'),
+                          Text('Payment Due: ${order.paymentDue}'),
+                          Text('Sizes and Quantities:',
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: order.sizesQuantityMap.entries
+                                .map((entry) =>
+                                    Text('${entry.key}: ${entry.value}'))
+                                .toList(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  columnSpacing: 16.0,
-                  columns: const [
-                    DataColumn(label: Text('Piece')),
-                    DataColumn(label: Text('Date')),
-                    DataColumn(label: Text('Total Payment')),
-                    DataColumn(label: Text('Payment Done')),
-                    DataColumn(label: Text('Payment Due')),
-                    DataColumn(label: Text('Sizes and Quantities')),
-                  ],
-                  rows: customerOrders
-                      .map((order) => DataRow(cells: [
-                            DataCell(Text(order.piece)),
-                            DataCell(Text(
-                                order.date.toIso8601String().split('T')[0])),
-                            DataCell(Text(order.totalPayment.toString())),
-                            DataCell(Text(order.paymentDone.toString())),
-                            DataCell(Text(order.paymentDue.toString())),
-                            DataCell(
-                              SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: order.sizesQuantityMap.entries
-                                      .map((entry) =>
-                                          Text('${entry.key}: ${entry.value}'))
-                                      .toList(),
-                                ),
-                              ),
-                            ),
-                          ]))
-                      .toList(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                _showAddOrderDialog(context);
-              },
-              child: const Text('Add New Order'),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  void _showAddOrderDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return OrderDialog(customer: widget.customer);
-      },
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) => OrderDialog(
+              customer: widget.customer,
+              onOrderPlaced: _onOrderPlaced,
+            ),
+          );
+        },
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }

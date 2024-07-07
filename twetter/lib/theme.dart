@@ -1,26 +1,144 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-const primaryColor = Color(0xFF6200EE);
-const secondaryColor = Color(0xFF03DAC6);
-const backgroundColor = Color(0xFFF5F5F5);
-const textColor = Color(0xFF333333);
+class AppTheme {
+  // Light Theme Colors
+  static const Color _lightPrimaryColor = Color(0xFF6200EE);
+  static const Color _lightPrimaryVariantColor = Color(0xFF3700B3);
+  static const Color _lightSecondaryColor = Color(0xFF03DAC6);
+  static const Color _lightSecondaryVariantColor = Color(0xFF018786);
+  static const Color _lightBackgroundColor = Color(0xFFF5F5F5);
+  static const Color _lightErrorColor = Color(0xFFB00020);
 
-final lightTheme = ThemeData(
-  primaryColor: primaryColor,
-  splashColor: secondaryColor,
-  scaffoldBackgroundColor: backgroundColor,
-  textTheme: TextTheme(
-    bodyText1: TextStyle(color: textColor),
-    bodyText2: TextStyle(color: textColor.withOpacity(0.6)),
-  ),
-);
+  // Dark Theme Colors
+  static const Color _darkPrimaryColor = Color(0xFFBB86FC);
+  static const Color _darkPrimaryVariantColor = Color(0xFF3700B3);
+  static const Color _darkSecondaryColor = Color(0xFF03DAC6);
+  static const Color _darkBackgroundColor = Color(0xFF121212);
+  static const Color _darkErrorColor = Color(0xFFCF6679);
 
-final darkTheme = ThemeData(
-  primaryColor: secondaryColor,
-  splashColor: primaryColor,
-  scaffoldBackgroundColor: Color(0xFF333333),
-  textTheme: TextTheme(
-    bodyText1: TextStyle(color: Colors.white),
-    bodyText2: TextStyle(color: Colors.white70),
-  ),
-);
+  static final ThemeData lightTheme = ThemeData(
+    primaryColor: _lightPrimaryColor,
+    scaffoldBackgroundColor: _lightBackgroundColor,
+    appBarTheme: AppBarTheme(
+      color: _lightPrimaryColor,
+      iconTheme: IconThemeData(color: Colors.white),
+      elevation: 0,
+    ),
+    colorScheme: ColorScheme.light(
+      primary: _lightPrimaryColor,
+      primaryContainer: _lightPrimaryVariantColor,
+      secondary: _lightSecondaryColor,
+      secondaryContainer: _lightSecondaryVariantColor,
+      background: _lightBackgroundColor,
+      error: _lightErrorColor,
+    ),
+    textTheme: GoogleFonts.robotoTextTheme().apply(
+      bodyColor: Colors.black87,
+      displayColor: Colors.black,
+    ),
+    iconTheme: IconThemeData(
+      color: _lightPrimaryColor,
+    ),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: _lightSecondaryColor,
+      foregroundColor: Colors.black,
+      elevation: 6,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        primary: _lightPrimaryColor,
+        onPrimary: Colors.white,
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        elevation: 4,
+      ),
+    ),
+    cardTheme: CardTheme(
+      color: Colors.white,
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: Colors.grey[200],
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: _lightPrimaryColor),
+      ),
+    ),
+  );
+
+  static final ThemeData darkTheme = ThemeData(
+    primaryColor: _darkPrimaryColor,
+    scaffoldBackgroundColor: _darkBackgroundColor,
+    appBarTheme: AppBarTheme(
+      color: _darkBackgroundColor,
+      iconTheme: IconThemeData(color: _darkPrimaryColor),
+      elevation: 0,
+    ),
+    colorScheme: ColorScheme.dark(
+      primary: _darkPrimaryColor,
+      primaryContainer: _darkPrimaryVariantColor,
+      secondary: _darkSecondaryColor,
+      background: _darkBackgroundColor,
+      error: _darkErrorColor,
+    ),
+    textTheme: GoogleFonts.robotoTextTheme().apply(
+      bodyColor: Colors.white70,
+      displayColor: Colors.white,
+    ),
+    iconTheme: IconThemeData(
+      color: _darkPrimaryColor,
+    ),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: _darkSecondaryColor,
+      foregroundColor: Colors.black,
+      elevation: 6,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        primary: _darkPrimaryColor,
+        onPrimary: Colors.black,
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        elevation: 4,
+      ),
+    ),
+    cardTheme: CardTheme(
+      color: Color(0xFF1E1E1E),
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: Colors.grey[800],
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: _darkPrimaryColor),
+      ),
+    ),
+  );
+}

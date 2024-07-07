@@ -7,7 +7,7 @@ import '../widgets/add_piece_dialog.dart';
 import '../widgets/edit_quantity_dialog.dart';
 
 class StockScreen extends StatefulWidget {
-  const StockScreen({super.key});
+  const StockScreen({Key? key}) : super(key: key);
 
   @override
   _StockScreenState createState() => _StockScreenState();
@@ -18,11 +18,12 @@ class _StockScreenState extends State<StockScreen> {
   List<Piece> _pieces = [];
   final TextEditingController _deleteConfirmController =
       TextEditingController();
+  bool _expandAll = false;
 
   @override
   void initState() {
-    _loadPieces();
     super.initState();
+    _loadPieces();
   }
 
   Future<void> _loadPieces() async {
@@ -45,118 +46,166 @@ class _StockScreenState extends State<StockScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Stock'),
+        title: Text('Stock Items',
+            style: Theme.of(context)
+                .textTheme
+                .headline6
+                ?.copyWith(color: Theme.of(context).colorScheme.onPrimary)),
         actions: [
           IconButton(
             icon: Icon(Icons.search),
             onPressed: () {
-              showSearch(
-                context: context,
-                delegate: PieceSearchDelegate(),
-              );
+              showSearch(context: context, delegate: PieceSearchDelegate());
             },
           ),
           IconButton(
-            icon: Icon(Icons.delete),
+            icon: Icon(Icons.delete_sweep),
             onPressed: () {
               _showDeleteAllConfirmationDialog(context);
             },
           ),
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AddPieceDialog(
-                    onPieceAdded: () {
-                      setState(() {
-                        _loadPieces(); // Assuming you have a method to load pieces in the parent widget
-                      });
-                    },
-                  );
+          // PopupMenuButton<String>(
+          //   onSelected: (String result) {
+          //     setState(() {
+          //       _expandAll = result == 'expand';
+          //     });
+          //   },
+          //   itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+          //     const PopupMenuItem<String>(
+          //       value: 'expand',
+          //       child: Text('Expand All'),
+          //     ),
+          //     const PopupMenuItem<String>(
+          //       value: 'collapse',
+          //       child: Text('Collapse All'),
+          //     ),
+          //   ],
+          // ),
+        ],
+      ),
+      body: sortedPieces.isEmpty
+          ? _buildEmptyStockMessage()
+          : _buildStockList(sortedPieces),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AddPieceDialog(
+                onPieceAdded: () {
+                  setState(() {
+                    _loadPieces();
+                  });
                 },
-              ).then((_) {
-                setState(() {});
-              });
+              );
             },
+          ).then((_) {
+            setState(() {});
+          });
+        },
+        child: Icon(Icons.add),
+        backgroundColor: Theme.of(context).colorScheme.secondary,
+      ),
+    );
+  }
+
+  Widget _buildEmptyStockMessage() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.inventory_2_outlined,
+              size: 100, color: Theme.of(context).colorScheme.secondary),
+          SizedBox(height: 20),
+          Text(
+            'Your stock is empty',
+            style: Theme.of(context)
+                .textTheme
+                .headline5
+                ?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 10),
+          Text(
+            'Add some pieces to get started!',
+            style: Theme.of(context).textTheme.subtitle1,
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: sortedPieces.length,
-        itemBuilder: (context, index) {
-          final piece = sortedPieces[index];
-          return Card(
-            elevation: 4,
-            margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Piece Number: ${piece.pieceNumber}',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return EditQuantityDialog(
-                                piece,
-                                onPieceUpataed: () {
-                                  setState(() {
-                                    _loadPieces();
-                                  });
-                                },
-                              );
-                            },
-                          ).then((_) {
-                            setState(() {});
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Divider(),
-                  SizedBox(height: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: piece.sizesQuantityMap.entries.map((entry) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 4.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Text(
-                              'Size ${entry.key}:',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                            Text(
-                              '${entry.value}',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ],
-              ),
+    );
+  }
+
+  Widget _buildStockList(List<Piece> sortedPieces) {
+    return ListView.builder(
+      itemCount: sortedPieces.length,
+      itemBuilder: (context, index) {
+        final piece = sortedPieces[index];
+        return Card(
+          elevation: 4,
+          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: ExpansionTile(
+            initiallyExpanded: _expandAll,
+            title: Text(
+              'Piece Number: ${piece.pieceNumber}',
+              style: Theme.of(context)
+                  .textTheme
+                  .subtitle1
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
-          );
-        },
-      ),
+            trailing: IconButton(
+              icon: Icon(Icons.edit,
+                  color: Theme.of(context).colorScheme.primary),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return EditQuantityDialog(
+                      piece,
+                      onPieceUpataed: () {
+                        setState(() {
+                          _loadPieces();
+                        });
+                      },
+                    );
+                  },
+                ).then((_) {
+                  setState(() {});
+                });
+              },
+            ),
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: piece.sizesQuantityMap.entries.map((entry) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            'Size ${entry.key}:',
+                            style: Theme.of(context).textTheme.bodyText2,
+                          ),
+                          Text(
+                            '${entry.value}',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyText1
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -165,18 +214,26 @@ class _StockScreenState extends State<StockScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Delete All Pieces?'),
+          title: Text('Delete All Pieces?',
+              style: TextStyle(color: Theme.of(context).errorColor)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                  'Are you sure you want to delete all pieces? This action cannot be undone.'),
+                'Are you sure you want to delete all pieces? This action cannot be undone.',
+                style: Theme.of(context).textTheme.bodyText2,
+              ),
               SizedBox(height: 20),
-              Text('Type "Delete" to confirm:'),
+              Text('Type "Delete" to confirm:',
+                  style: Theme.of(context)
+                      .textTheme
+                      .subtitle2
+                      ?.copyWith(fontWeight: FontWeight.bold)),
               TextField(
                 controller: _deleteConfirmController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: 'Type "Delete" here',
+                  border: OutlineInputBorder(),
                 ),
               ),
             ],
@@ -188,7 +245,7 @@ class _StockScreenState extends State<StockScreen> {
               },
               child: Text('Cancel'),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () async {
                 if (_deleteConfirmController.text.trim() == 'Delete') {
                   await _pieceService.deleteAllPieces();
@@ -202,6 +259,8 @@ class _StockScreenState extends State<StockScreen> {
                 }
               },
               child: Text('Delete All'),
+              style: ElevatedButton.styleFrom(
+                  primary: Theme.of(context).errorColor),
             ),
           ],
         );

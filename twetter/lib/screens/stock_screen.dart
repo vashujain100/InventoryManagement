@@ -18,7 +18,6 @@ class _StockScreenState extends State<StockScreen> {
   List<Piece> _pieces = [];
   final TextEditingController _deleteConfirmController =
       TextEditingController();
-  bool _expandAll = false;
 
   @override
   void initState() {
@@ -139,71 +138,25 @@ class _StockScreenState extends State<StockScreen> {
       itemCount: sortedPieces.length,
       itemBuilder: (context, index) {
         final piece = sortedPieces[index];
-        return Card(
-          elevation: 4,
-          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: ExpansionTile(
-            initiallyExpanded: _expandAll,
-            title: Text(
-              'Piece Number: ${piece.pieceNumber}',
-              style: Theme.of(context)
-                  .textTheme
-                  .subtitle1
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            trailing: IconButton(
-              icon: Icon(Icons.edit,
-                  color: Theme.of(context).colorScheme.primary),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return EditQuantityDialog(
-                      piece,
-                      onPieceUpdated: () {
-                        setState(() {
-                          _loadPieces();
-                        });
-                      },
-                    );
+        return CustomExpansionTile(
+          piece: piece,
+          onEdit: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return EditQuantityDialog(
+                  piece,
+                  onPieceUpdated: () {
+                    setState(() {
+                      _loadPieces();
+                    });
                   },
-                ).then((_) {
-                  setState(() {});
-                });
+                );
               },
-            ),
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: piece.sizesQuantityMap.entries.map((entry) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Text(
-                            'Size ${entry.key}:',
-                            style: Theme.of(context).textTheme.bodyText2,
-                          ),
-                          Text(
-                            '${entry.value}',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyText1
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ],
-          ),
+            ).then((_) {
+              setState(() {});
+            });
+          },
         );
       },
     );
@@ -265,6 +218,122 @@ class _StockScreenState extends State<StockScreen> {
           ],
         );
       },
+    );
+  }
+}
+
+class CustomExpansionTile extends StatefulWidget {
+  final Piece piece;
+  final VoidCallback onEdit;
+
+  const CustomExpansionTile({
+    Key? key,
+    required this.piece,
+    required this.onEdit,
+  }) : super(key: key);
+
+  @override
+  _CustomExpansionTileState createState() => _CustomExpansionTileState();
+}
+
+class _CustomExpansionTileState extends State<CustomExpansionTile>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _iconTurns;
+  bool _isExpanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+    _iconTurns = Tween<double>(begin: 0.0, end: 0.5).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleTap() {
+    setState(() {
+      _isExpanded = !_isExpanded;
+      if (_isExpanded) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 4,
+      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Column(
+        children: [
+          ListTile(
+            title: Text(
+              'Piece Number: ${widget.piece.pieceNumber}',
+              style: Theme.of(context)
+                  .textTheme
+                  .subtitle1
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.edit,
+                      color: Theme.of(context).colorScheme.primary),
+                  onPressed: widget.onEdit,
+                ),
+                RotationTransition(
+                  turns: _iconTurns,
+                  child: IconButton(
+                    icon: Icon(Icons.expand_more),
+                    onPressed: _handleTap,
+                  ),
+                ),
+              ],
+            ),
+            onTap: _handleTap,
+          ),
+          if (_isExpanded)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: widget.piece.sizesQuantityMap.entries.map((entry) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text(
+                          'Size ${entry.key}:',
+                          style: Theme.of(context).textTheme.bodyText2,
+                        ),
+                        Text(
+                          '${entry.value}',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyText1
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

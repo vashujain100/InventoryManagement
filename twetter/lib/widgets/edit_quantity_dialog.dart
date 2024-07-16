@@ -128,7 +128,7 @@ class _EditQuantityDialogState extends State<EditQuantityDialog> {
             ),
             SizedBox(height: 8),
             ElevatedButton.icon(
-              onPressed: () => _addNewSize(false),
+              onPressed: _addNewSize,
               icon: Icon(Icons.add),
               label: Text('Add Size'),
             ),
@@ -151,7 +151,6 @@ class _EditQuantityDialogState extends State<EditQuantityDialog> {
           children: [
             TextButton(
               onPressed: () {
-                widget.onPieceUpdated();
                 Navigator.of(context).pop();
               },
               child: Text('Cancel'),
@@ -172,9 +171,19 @@ class _EditQuantityDialogState extends State<EditQuantityDialog> {
   }
 
   void _updatePiece() {
+    _addCurrentSizeAndQuantity();
     Piece updatedPiece =
         widget.piece.copyWithSizesQuantityMap(newSizesQuantityMap);
     _pieceService.updatePiece(updatedPiece);
+  }
+
+  void _addCurrentSizeAndQuantity() {
+    final newSize = newSizeController.text.trim();
+    final newQuantity = int.tryParse(newQuantityController.text.trim()) ?? 0;
+
+    if (newSize.isNotEmpty && newQuantity > 0) {
+      newSizesQuantityMap[newSize] = newQuantity;
+    }
   }
 
   void _showConfirmationDialog(BuildContext context, String size) {
@@ -235,7 +244,7 @@ class _EditQuantityDialogState extends State<EditQuantityDialog> {
     );
   }
 
-  void _addNewSize(bool isSaveButton) {
+  void _addNewSize() {
     String newSize = newSizeController.text.trim();
     String newQuantityStr = newQuantityController.text.trim();
     int newQuantity = int.tryParse(newQuantityStr) ?? 0;

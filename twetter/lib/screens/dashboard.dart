@@ -127,12 +127,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                         ),
                         _buildAnimatedTile(
                           DashboardTile(
-                            title: 'Reports',
-                            icon: Icons.bar_chart,
-                            color: Theme.of(context).colorScheme.error,
-                            onTap: () =>
-                                Navigator.pushNamed(context, '/reports'),
-                          ),
+                              title: 'Reports',
+                              icon: Icons.bar_chart,
+                              color: Theme.of(context).colorScheme.error,
+                              onTap: () {
+                                // Navigator.pushNamed(context, '/reports'),
+                              }),
                         ),
                       ],
                     ),

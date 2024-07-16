@@ -3,21 +3,23 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Light Theme Colors
-  static const Color _lightPrimaryColor = Color(0xFF6200EE);
-  static const Color _lightPrimaryVariantColor = Color(0xFF3700B3);
-  static const Color _lightSecondaryColor = Color(0xFF03DAC6);
-  static const Color _lightSecondaryVariantColor = Color(0xFF018786);
-  static const Color _lightBackgroundColor = Color(0xFFF5F5F5);
+  static const Color _lightPrimaryColor = Color.fromRGBO(23, 107, 135, 1);
+  static const Color _lightPrimaryVariantColor =
+      Color.fromRGBO(180, 212, 255, 1);
+  static const Color _lightSecondaryColor = Color.fromRGBO(180, 212, 255, 1);
+  static const Color _lightSecondaryVariantColor =
+      Color.fromRGBO(180, 212, 255, 1);
+  static const Color _lightBackgroundColor = Color.fromRGBO(238, 245, 255, 1);
   static const Color _lightErrorColor = Color(0xFFB00020);
 
 // Earth Theme Colors
-  static const Color _earthPrimaryColor = Color.fromRGBO(181, 193, 142, 1);
+  static const Color _earthPrimaryColor = Color.fromRGBO(185, 148, 112, 1);
   static const Color _earthPrimaryVariantColor =
       Color.fromRGBO(247, 220, 185, 1);
   static const Color _earthSecondaryColor = Color.fromRGBO(222, 172, 128, 1);
   static const Color _earthSecondaryVariantColor =
       Color.fromRGBO(181, 193, 142, 1);
-  static const Color _earthBackgroundColor = Color.fromRGBO(185, 148, 112, 1);
+  static const Color _earthBackgroundColor = Color.fromRGBO(181, 193, 142, 1);
   static const Color _earthErrorColor = Color(0xFFCF6679);
 
   // Dark Theme Colors

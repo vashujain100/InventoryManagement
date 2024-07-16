@@ -182,19 +182,35 @@ class _AddPieceDialogState extends State<AddPieceDialog> {
   }
 
   void _savePiece() {
-    if (_formKey.currentState!.validate() && newSizesQuantityMap.isNotEmpty) {
-      final newPiece = Piece(
-        id: Uuid().v4(),
-        pieceNumber: pieceNameController.text.trim(),
-        sizesQuantityMap: Map.from(newSizesQuantityMap),
-      );
-      _pieceService.addPiece(newPiece);
-      widget.onPieceAdded();
-      Navigator.of(context).pop();
-    } else if (newSizesQuantityMap.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please add at least one size and quantity')),
-      );
+    if (_formKey.currentState!.validate()) {
+      // Add the current size and quantity if they are valid
+      _addCurrentSizeAndQuantity();
+
+      if (newSizesQuantityMap.isNotEmpty) {
+        final newPiece = Piece(
+          id: Uuid().v4(),
+          pieceNumber: pieceNameController.text.trim(),
+          sizesQuantityMap: Map.from(newSizesQuantityMap),
+        );
+        _pieceService.addPiece(newPiece);
+        widget.onPieceAdded();
+        Navigator.of(context).pop();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Please add at least one size and quantity')),
+        );
+      }
+    }
+  }
+
+  void _addCurrentSizeAndQuantity() {
+    final newSize = newSizeController.text.trim();
+    final newQuantity = int.tryParse(newQuantityController.text.trim()) ?? 0;
+
+    if (newSize.isNotEmpty && newQuantity > 0) {
+      setState(() {
+        newSizesQuantityMap[newSize] = newQuantity;
+      });
     }
   }
 
